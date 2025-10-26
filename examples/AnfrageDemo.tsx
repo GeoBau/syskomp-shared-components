@@ -9,7 +9,7 @@
  * - Subject line building: <title> <text> #<quotenr>
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import EmailModal from '../src/EmailModal';
 
 // Example 1: CAD Configurator with Article Number
