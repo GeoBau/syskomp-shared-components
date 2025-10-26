@@ -1,9 +1,26 @@
 /**
  * Shared Email Modal Component
  * Reusable modal for email inquiries (Angebot, CAD-Daten, etc.)
+ *
+ * CSS Strategy: Pure inline styles - no dependencies on Tailwind or external CSS
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+
+/**
+ * Generate inquiry number from timestamp
+ * Format: YYYYMMDD-HHMMSS (e.g., 20251026-143052)
+ */
+const generateInquiryNumber = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+};
 
 interface EmailModalProps {
   /** Modal title */
@@ -15,8 +32,24 @@ interface EmailModalProps {
   /** Email recipient */
   emailTo: string;
 
-  /** Email subject */
-  subject: string;
+  /**
+   * Email subject (legacy - use subjectTitle + subjectText for new format)
+   * If subjectTitle and subjectText are provided, this will be ignored
+   */
+  subject?: string;
+
+  /**
+   * Subject title (e.g., "CAD", "Angebot")
+   * Used with subjectText to build: <title> <text> #<quotenr>
+   * If not provided, uses the modal title (per anfrage.md: "title ist Title von anfrage komponente")
+   */
+  subjectTitle?: string;
+
+  /**
+   * Subject text from module (e.g., "Artnr: 12345", "Rollenförderer")
+   * Used with subjectTitle to build: <title> <text> #<quotenr>
+   */
+  subjectText?: string;
 
   /** Base email body (without contact info) */
   bodyWithoutContact: string;
@@ -34,6 +67,136 @@ interface EmailModalProps {
   onEmailSent?: () => void;
 }
 
+// Inline styles - no Tailwind dependency
+const styles = {
+  overlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 50,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '16px',
+  },
+  modal: {
+    backgroundColor: 'white',
+    padding: '24px',
+    borderRadius: '8px',
+    maxWidth: '700px',
+    width: '100%',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    maxHeight: '90vh',
+    overflowY: 'auto' as const,
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: 'bold' as const,
+    textAlign: 'center' as const,
+    marginBottom: '10px',
+    color: '#1e40af',
+  },
+  subtitle: {
+    textAlign: 'center' as const,
+    color: '#6b7280',
+    fontSize: '14px',
+    marginBottom: '16px',
+  },
+  descriptionContainer: {
+    color: '#374151',
+    marginBottom: '16px',
+  },
+  note: {
+    fontSize: '14px',
+    backgroundColor: '#eff6ff',
+    border: '1px solid #bfdbfe',
+    borderRadius: '4px',
+    padding: '12px',
+    marginTop: '12px',
+  },
+  emailHeader: {
+    marginBottom: '8px',
+    backgroundColor: '#f9fafb',
+    padding: '8px',
+    borderRadius: '4px',
+  },
+  emailHeaderText: {
+    fontSize: '14px',
+    marginBottom: '2px',
+  },
+  bold: {
+    fontWeight: 'bold' as const,
+  },
+  contactSection: {
+    backgroundColor: '#f9fafb',
+    border: '1px solid #e5e7eb',
+    padding: '8px',
+    borderRadius: '4px',
+    marginBottom: '8px',
+  },
+  contactSectionTitle: {
+    fontSize: '14px',
+    color: '#374151',
+    fontWeight: '500' as const,
+    marginBottom: '6px',
+  },
+  inputsContainer: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+  },
+  inputRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  label: {
+    fontSize: '14px',
+    color: '#6b7280',
+    minWidth: '110px',
+  },
+  input: {
+    flex: 1,
+    padding: '4px 6px',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    fontSize: '14px',
+  },
+  textarea: {
+    width: '100%',
+    minHeight: '300px',
+    padding: '10px',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    fontFamily: 'monospace',
+    fontSize: '12px',
+    marginBottom: '20px',
+    resize: 'vertical' as const,
+  },
+  buttonContainer: {
+    display: 'flex',
+    gap: '12px',
+  },
+  button: {
+    flex: 1,
+    color: 'white',
+    padding: '12px 24px',
+    borderRadius: '4px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: '500' as const,
+    transition: 'opacity 0.2s',
+  },
+  buttonClose: {
+    flex: '0 0 auto',
+    padding: '12px 20px',
+  },
+};
+
 /**
  * Reusable Email Modal - used by AnfrageButton and CAD-Daten
  *
@@ -42,12 +205,16 @@ interface EmailModalProps {
  * - Email preview with live updates
  * - Copy text / Email öffnen / Close buttons
  * - Browser-specific mailto handling
+ * - Automatic inquiry number generation (format: #YYYYMMDD-HHMMSS)
+ * - Pure inline styles (no Tailwind dependency)
  */
 const EmailModal: React.FC<EmailModalProps> = ({
   title,
   subtitle,
   emailTo,
   subject,
+  subjectTitle,
+  subjectText,
   bodyWithoutContact,
   description,
   note,
@@ -59,11 +226,27 @@ const EmailModal: React.FC<EmailModalProps> = ({
   const [contactCompany, setContactCompany] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Generate inquiry number once when component mounts
+  const inquiryNumber = useMemo(() => generateInquiryNumber(), []);
+
+  // Build subject line: <title> <text> #<quotenr>
+  // Per anfrage.md line 5: "title ist Title von anfrage komponente"
+  // If subjectTitle is not provided, use the modal title
+  // If new props (subjectTitle/subjectText) are provided, use them
+  // Otherwise, fall back to legacy subject prop
+  const emailSubject = useMemo(() => {
+    if (subjectText) {
+      const titleForSubject = subjectTitle || title; // Use modal title if subjectTitle not provided
+      return `${titleForSubject} ${subjectText} #${inquiryNumber}`;
+    }
+    return subject || '';
+  }, [subjectTitle, subjectText, title, subject, inquiryNumber]);
+
   // Add contact info to email body
   const body = `${bodyWithoutContact}\n\nName: ${contactName}\nTelefon: ${contactPhone}\nFirma: ${contactCompany}`;
 
   const handleCopyText = async () => {
-    const fullEmailText = `An: ${emailTo}\nBetreff: ${subject}\n\n${body}`;
+    const fullEmailText = `An: ${emailTo}\nBetreff: ${emailSubject}\n\n${body}`;
 
     try {
       if (navigator.clipboard) {
@@ -89,7 +272,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
   };
 
   const handleOpenEmail = () => {
-    const mailtoLink = `mailto:${emailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailtoLink = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
 
     // Browser-specific mailto handling
     const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
@@ -115,29 +298,29 @@ const EmailModal: React.FC<EmailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4"
+      style={styles.overlay}
       onClick={onClose}
     >
       <div
-        className="bg-white p-8 rounded-lg max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+        style={styles.modal}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Title */}
-        <h2 className="text-2xl font-bold text-center mb-4" style={{ color: '#1e40af' }}>
+        <h2 style={styles.title}>
           {title}
         </h2>
 
         {/* Subtitle (optional) */}
         {subtitle && (
-          <p className="text-center text-gray-600 text-sm mb-4">{subtitle}</p>
+          <p style={styles.subtitle}>{subtitle}</p>
         )}
 
         {/* Description & Note (optional) */}
         {(description || note) && (
-          <div className="text-gray-700 mb-4 space-y-3">
+          <div style={styles.descriptionContainer}>
             {description && <p>{description}</p>}
             {note && (
-              <p className="text-sm bg-blue-50 border border-blue-200 rounded p-3">
+              <p style={styles.note}>
                 {note}
               </p>
             )}
@@ -145,49 +328,49 @@ const EmailModal: React.FC<EmailModalProps> = ({
         )}
 
         {/* Email header info */}
-        <div className="mb-2 bg-gray-50 p-2 rounded">
-          <p className="text-sm mb-0.5">
-            <span className="font-bold">An:</span> {emailTo}
+        <div style={styles.emailHeader}>
+          <p style={styles.emailHeaderText}>
+            <span style={styles.bold}>An:</span> {emailTo}
           </p>
-          <p className="text-sm">
-            <span className="font-bold">Betreff:</span> {subject}
+          <p style={styles.emailHeaderText}>
+            <span style={styles.bold}>Betreff:</span> {emailSubject}
           </p>
         </div>
 
         {/* Contact Info Inputs */}
-        <div className="bg-gray-50 border border-gray-200 p-2 rounded mb-2">
-          <p className="text-sm text-gray-700 font-medium mb-1.5">
+        <div style={styles.contactSection}>
+          <p style={styles.contactSectionTitle}>
             Mit Ihren Informationen können wir Sie einfacher kontaktieren:
           </p>
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5">
-              <label className="text-sm text-gray-600 min-w-[110px]">Name:</label>
+          <div style={styles.inputsContainer}>
+            <div style={styles.inputRow}>
+              <label style={styles.label}>Name:</label>
               <input
                 type="text"
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="(optional)"
-                className="flex-1 px-1.5 py-1 border border-gray-300 rounded text-sm"
+                style={styles.input}
               />
             </div>
-            <div className="flex items-center gap-1.5">
-              <label className="text-sm text-gray-600 min-w-[110px]">Telefonnummer:</label>
+            <div style={styles.inputRow}>
+              <label style={styles.label}>Telefonnummer:</label>
               <input
                 type="tel"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
                 placeholder="(optional)"
-                className="flex-1 px-1.5 py-1 border border-gray-300 rounded text-sm"
+                style={styles.input}
               />
             </div>
-            <div className="flex items-center gap-1.5">
-              <label className="text-sm text-gray-600 min-w-[110px]">Firma:</label>
+            <div style={styles.inputRow}>
+              <label style={styles.label}>Firma:</label>
               <input
                 type="text"
                 value={contactCompany}
                 onChange={(e) => setContactCompany(e.target.value)}
                 placeholder="(optional)"
-                className="flex-1 px-1.5 py-1 border border-gray-300 rounded text-sm"
+                style={styles.input}
               />
             </div>
           </div>
@@ -197,29 +380,32 @@ const EmailModal: React.FC<EmailModalProps> = ({
         <textarea
           readOnly
           value={body}
-          className="w-full min-h-[300px] p-2.5 border border-gray-300 rounded font-mono text-xs mb-5 resize-y"
+          style={styles.textarea}
         />
 
         {/* Buttons */}
-        <div className="flex gap-3">
+        <div style={styles.buttonContainer}>
           <button
             onClick={handleCopyText}
-            className="flex-1 text-white px-6 py-3 rounded hover:opacity-90 transition-colors font-medium"
-            style={{ backgroundColor: '#1e40af' }}
+            style={{ ...styles.button, backgroundColor: copySuccess ? '#10b981' : '#1e40af' }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
             {copySuccess ? '✓ Text kopiert!' : 'Text kopieren'}
           </button>
           <button
             onClick={handleOpenEmail}
-            className="flex-1 text-white px-6 py-3 rounded hover:opacity-90 transition-colors font-medium"
-            style={{ backgroundColor: '#7c3aed' }}
+            style={{ ...styles.button, backgroundColor: 'rgb(31, 160, 160)' }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
             E-Mail öffnen
           </button>
           <button
             onClick={onClose}
-            className="px-6 py-3 text-white rounded hover:opacity-90 transition-colors font-medium"
-            style={{ backgroundColor: '#6b7280' }}
+            style={{ ...styles.button, ...styles.buttonClose, backgroundColor: '#6b7280' }}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
             Schließen
           </button>
