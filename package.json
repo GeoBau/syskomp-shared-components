@@ -1,0 +1,21 @@
+{
+  "name": "syskomp-shared-components",
+  "version": "1.0.0",
+  "description": "Shared React components for Syskomp configurators",
+  "main": "src/EmailModal.tsx",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GeoBau/syskomp-shared-components.git"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "email",
+    "modal"
+  ],
+  "author": "Syskomp",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}
