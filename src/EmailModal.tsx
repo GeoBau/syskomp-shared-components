@@ -80,13 +80,15 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '16px',
+    padding: '2px',
+    fontSize: '13px',
+    color: '#374151',
   },
   modal: {
     backgroundColor: 'white',
-    padding: '12px',
+    padding: '10px',
     borderRadius: '8px',
-    maxWidth: '700px',
+    maxWidth: '450px',
     width: '100%',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     maxHeight: '90vh',
@@ -100,35 +102,30 @@ const styles = {
     color: '#1e40af',
   },
   subtitle: {
-    color: '#6b7280',
-    fontSize: '13px',
-    marginBottom: '8px',
+    marginBottom: '4px',
   },
   descriptionContainer: {
-    color: '#374151',
-    marginBottom: '8px',
+    marginBottom: '4px',
   },
   note: {
-    fontSize: '13px',
     backgroundColor: '#eff6ff',
     border: '1px solid #bfdbfe',
     borderRadius: '4px',
     padding: '6px',
-    marginTop: '6px',
+    margin: '5px',
   },
   emailHeader: {
+    border: '1px solid #d1d5db',
     marginBottom: '4px',
     backgroundColor: '#f9fafb',
     padding: '4px',
     borderRadius: '4px',
   },
   emailHeaderText: {
-    fontSize: '13px',
     marginBottom: '1px',
     marginTop: '1px'
   },
   bold: {
-    fontWeight: 'bold' as const,
   },
   contactSection: {
     backgroundColor: '#f9fafb',
@@ -138,8 +135,6 @@ const styles = {
     marginBottom: '4px',
   },
   contactSectionTitle: {
-    fontSize: '13px',
-    color: '#374151',
     marginBottom: '3px',
     marginTop: '3px',
   },
@@ -154,8 +149,6 @@ const styles = {
     gap: '3px',
   },
   label: {
-    fontSize: '13px',
-    color: '#6b7280',
     minWidth: '110px',
   },
   input: {
@@ -163,7 +156,6 @@ const styles = {
     padding: '2px 3px',
     border: '1px solid #d1d5db',
     borderRadius: '4px',
-    fontSize: '13px',
   },
   textarea: {
     width: '100%',
@@ -187,7 +179,6 @@ const styles = {
     borderRadius: '4px',
     border: 'none',
     cursor: 'pointer',
-    fontSize: '15px',
     fontWeight: '500' as const,
     transition: 'opacity 0.2s',
   },
