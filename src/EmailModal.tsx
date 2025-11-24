@@ -7,6 +7,20 @@
 
 import React, { useState, useMemo } from 'react';
 
+// Color constants - Syskomp design system
+const COLORS = {
+  skTurkis: '#17a6b0',
+  skButton: '#00b51a',
+  skButtonHover: '#009914',
+  skPrice: '#17a6b0',
+  skCad: '#17a6b0',
+  skBlau: '#215674',
+  skGrau: '#575d5e',
+  // Derived colors
+  skTurkisLight: 'rgba(23, 166, 176, 0.1)', // sk-turkis with 10% opacity
+  skTurkisBorder: '#17a6b0',
+};
+
 /**
  * Generate inquiry number from timestamp
  * Format: YYYYMMDD-HHMMSS (e.g., 20251026-143052)
@@ -99,7 +113,7 @@ const styles = {
     fontWeight: 'bold' as const,
     textAlign: 'center' as const,
     marginBottom: '5px',
-    color: '#1e40af',
+    color: '#000000',
   },
   subtitle: {
     marginBottom: '4px',
@@ -108,8 +122,8 @@ const styles = {
     marginBottom: '4px',
   },
   note: {
-    backgroundColor: '#eff6ff',
-    border: '1px solid #bfdbfe',
+    backgroundColor: COLORS.skTurkisLight,
+    border: `1px solid ${COLORS.skTurkisBorder}`,
     borderRadius: '4px',
     padding: '6px',
     margin: '5px',
@@ -378,7 +392,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
         <div style={styles.buttonContainer}>
           <button
             onClick={handleCopyText}
-            style={{ ...styles.button, backgroundColor: copySuccess ? '#10b981' : '#1e40af' }}
+            style={{ ...styles.button, backgroundColor: copySuccess ? '#10b981' : COLORS.skTurkis }}
             onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
             onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
@@ -386,9 +400,9 @@ const EmailModal: React.FC<EmailModalProps> = ({
           </button>
           <button
             onClick={handleOpenEmail}
-            style={{ ...styles.button, backgroundColor: 'rgb(31, 160, 160)' }}
-            onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+            style={{ ...styles.button, backgroundColor: COLORS.skButton }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = COLORS.skButtonHover}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = COLORS.skButton}
           >
             E-Mail öffnen
           </button>
