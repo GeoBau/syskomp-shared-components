@@ -213,19 +213,20 @@ const styles = {
  * - Automatic inquiry number generation (format: #YYYYMMDD-HHMMSS)
  * - Pure inline styles (no Tailwind dependency)
  */
-const EmailModal: React.FC<EmailModalProps> = ({
-  title,
-  subtitle,
-  emailTo,
-  subject,
-  subjectTitle,
-  subjectText,
-  bodyWithoutContact,
-  description,
-  note,
-  onClose,
-  onEmailSent
-}) => {
+const EmailModal: React.FC<EmailModalProps> = (props) => {
+  const {
+    title,
+    subtitle,
+    emailTo,
+    subject,
+    subjectTitle,
+    subjectText,
+    bodyWithoutContact,
+    description,
+    note,
+    onClose,
+    onEmailSent
+  } = props;
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactCompany, setContactCompany] = useState('');
@@ -321,10 +322,10 @@ const EmailModal: React.FC<EmailModalProps> = ({
         )}
 
         {/* Description & Note (optional) */}
-        {(description || note) && (
+        {(description || (note && note.trim())) && (
           <div style={styles.descriptionContainer}>
             {description && <p>{description}</p>}
-            {note && (
+            {note && note.trim() && (
               <p style={styles.note}>
                 {note}
               </p>
