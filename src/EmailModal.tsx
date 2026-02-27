@@ -5,7 +5,7 @@
  * CSS Strategy: Pure inline styles - no dependencies on Tailwind or external CSS
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 // Color constants - Syskomp design system
 const COLORS = {
@@ -34,6 +34,30 @@ const generateInquiryNumber = (): string => {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
   return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+};
+
+// ─── LocalStorage Persistence ────────────────────────────────
+
+const EMAIL_STORAGE_KEY = 'syskomp-email-contact';
+
+interface EmailContactData {
+  name: string;
+  phone: string;
+  company: string;
+}
+
+const loadEmailContactData = (): Partial<EmailContactData> => {
+  try {
+    const stored = localStorage.getItem(EMAIL_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return {};
+};
+
+const saveEmailContactData = (data: EmailContactData) => {
+  try {
+    localStorage.setItem(EMAIL_STORAGE_KEY, JSON.stringify(data));
+  } catch { /* ignore */ }
 };
 
 interface EmailModalProps {
@@ -233,10 +257,16 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
     onClose,
     onEmailSent
   } = props;
-  const [contactName, setContactName] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactCompany, setContactCompany] = useState('');
+  const savedContact = useMemo(() => loadEmailContactData(), []);
+  const [contactName, setContactName] = useState(savedContact.name || '');
+  const [contactPhone, setContactPhone] = useState(savedContact.phone || '');
+  const [contactCompany, setContactCompany] = useState(savedContact.company || '');
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // Persist contact data on change
+  useEffect(() => {
+    saveEmailContactData({ name: contactName, phone: contactPhone, company: contactCompany });
+  }, [contactName, contactPhone, contactCompany]);
 
   // Generate inquiry number once when component mounts
   const inquiryNumber = useMemo(() => generateInquiryNumber(), []);
