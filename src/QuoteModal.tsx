@@ -526,6 +526,39 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
               />
             </div>
 
+            {/* ── Privacy notice ── */}
+            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px', lineHeight: '1.4' }}>
+              Mit dem Absenden erkläre ich mich mit der Verarbeitung meiner Daten zur Bearbeitung
+              meiner Anfrage einverstanden. Die Daten werden nicht an Dritte weitergegeben.
+            </p>
+
+            {/* ── Buttons ── */}
+            <div style={styles.buttonContainer}>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                style={{
+                  ...styles.button,
+                  backgroundColor: COLORS.skButton,
+                  ...(submitting ? styles.buttonDisabled : {}),
+                }}
+                onMouseOver={(e) => { if (!submitting) e.currentTarget.style.backgroundColor = COLORS.skButtonHover; }}
+                onMouseOut={(e) => { if (!submitting) e.currentTarget.style.backgroundColor = COLORS.skButton; }}
+              >
+                {submitting ? 'Wird gesendet...' : (
+                  <>Ihr Angebot<br /><span style={{ fontSize: '11px', fontWeight: 'normal' }}>bekommen Sie in Minuten</span></>
+                )}
+              </button>
+              <button
+                onClick={onClose}
+                style={{ ...styles.button, flex: '0 0 auto', backgroundColor: '#6b7280' }}
+                onMouseOver={(e) => { e.currentTarget.style.opacity = '0.9'; }}
+                onMouseOut={(e) => { e.currentTarget.style.opacity = '1'; }}
+              >
+                Schließen
+              </button>
+            </div>
+
             {/* ── Produktbeschreibung (optional) ── */}
             {description && (
               <div style={{
@@ -565,39 +598,6 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* ── Privacy notice ── */}
-            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px', lineHeight: '1.4' }}>
-              Mit dem Absenden erkläre ich mich mit der Verarbeitung meiner Daten zur Bearbeitung
-              meiner Anfrage einverstanden. Die Daten werden nicht an Dritte weitergegeben.
-            </p>
-
-            {/* ── Buttons ── */}
-            <div style={styles.buttonContainer}>
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                style={{
-                  ...styles.button,
-                  backgroundColor: COLORS.skButton,
-                  ...(submitting ? styles.buttonDisabled : {}),
-                }}
-                onMouseOver={(e) => { if (!submitting) e.currentTarget.style.backgroundColor = COLORS.skButtonHover; }}
-                onMouseOut={(e) => { if (!submitting) e.currentTarget.style.backgroundColor = COLORS.skButton; }}
-              >
-                {submitting ? 'Wird gesendet...' : (
-                  <>Ihr Angebot<br /><span style={{ fontSize: '11px', fontWeight: 'normal' }}>bekommen Sie in Minuten</span></>
-                )}
-              </button>
-              <button
-                onClick={onClose}
-                style={{ ...styles.button, flex: '0 0 auto', backgroundColor: '#6b7280' }}
-                onMouseOver={(e) => { e.currentTarget.style.opacity = '0.9'; }}
-                onMouseOut={(e) => { e.currentTarget.style.opacity = '1'; }}
-              >
-                Schließen
-              </button>
             </div>
           </>
         )}
