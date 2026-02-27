@@ -98,15 +98,15 @@ const styles = {
   },
   modal: {
     backgroundColor: 'white',
-    padding: '10px',
+    padding: '20px',
     borderRadius: '8px',
-    maxWidth: '450px',
+    maxWidth: '550px',
     width: '100%',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     maxHeight: '90vh',
     overflowY: 'auto' as const,
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontSize: '13px',
+    fontSize: '15px',
     lineHeight: '1.4',
     color: '#374151',
   },
@@ -132,9 +132,9 @@ const styles = {
   },
   emailHeader: {
     border: '1px solid #d1d5db',
-    marginBottom: '4px',
+    marginBottom: '8px',
     backgroundColor: '#f9fafb',
-    padding: '4px',
+    padding: '8px 12px',
     borderRadius: '4px',
   },
   emailHeaderText: {
@@ -146,9 +146,9 @@ const styles = {
   contactSection: {
     backgroundColor: '#f9fafb',
     border: '1px solid #e5e7eb',
-    padding: '4px',
+    padding: '8px 12px',
     borderRadius: '4px',
-    marginBottom: '4px',
+    marginBottom: '8px',
   },
   contactSectionTitle: {
     marginBottom: '3px',
@@ -157,19 +157,19 @@ const styles = {
   inputsContainer: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '2px',
+    gap: '4px',
   },
   inputRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '3px',
+    gap: '8px',
   },
   label: {
     minWidth: '110px',
   },
   input: {
     flex: 1,
-    padding: '2px 3px',
+    padding: '4px 8px',
     border: '1px solid #d1d5db',
     borderRadius: '4px',
     fontFamily: 'inherit',
@@ -178,12 +178,12 @@ const styles = {
   textarea: {
     width: '100%',
     minHeight: '200px',
-    padding: '5px',
+    padding: '8px',
     border: '1px solid #d1d5db',
     borderRadius: '4px',
     fontFamily: 'monospace',
-    fontSize: '10px',
-    marginBottom: '10px',
+    fontSize: '12px',
+    marginBottom: '12px',
     resize: 'vertical' as const,
   },
   buttonContainer: {
@@ -193,7 +193,7 @@ const styles = {
   button: {
     flex: 1,
     color: 'white',
-    padding: '6px 12px',
+    padding: '8px 14px',
     borderRadius: '4px',
     border: 'none',
     cursor: 'pointer',

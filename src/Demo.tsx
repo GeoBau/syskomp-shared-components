@@ -7,26 +7,52 @@ import EmailModal from './EmailModal';
  */
 const Demo: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>EmailModal Demo</h1>
       <p>Click the button below to see the EmailModal in action:</p>
 
-      <button
-        onClick={() => setShowModal(true)}
-        style={{
-          backgroundColor: '#1e40af',
-          color: 'white',
-          padding: '10px 20px',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '16px',
-        }}
-      >
-        Open Email Modal
-      </button>
+      {/* Normal host context */}
+      <div style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '4px' }}>
+        <h3>Host App 1: Normale Schrift (14px Arial)</h3>
+        <button
+          onClick={() => setShowModal(true)}
+          style={{
+            backgroundColor: '#1e40af',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px',
+          }}
+        >
+          Open Email Modal
+        </button>
+      </div>
+
+      {/* Host context with very different fonts - simulates a different app */}
+      <div style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '4px', fontFamily: 'Georgia, serif', fontSize: '22px', color: 'darkred' }}>
+        <h3>Host App 2: Große Serif-Schrift (22px Georgia, dunkelrot)</h3>
+        <p>Dieser Bereich simuliert eine andere Anwendung mit komplett anderen Font-Einstellungen.</p>
+        <button
+          onClick={() => setShowModal2(true)}
+          style={{
+            backgroundColor: '#8b0000',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '22px',
+            fontFamily: 'Georgia, serif',
+          }}
+        >
+          Open Email Modal (aus anderer App)
+        </button>
+      </div>
 
       {showModal && (
         <EmailModal
@@ -51,6 +77,32 @@ Mit freundlichen Grüßen`}
           onEmailSent={() => {
             console.log('Email sent!');
             setShowModal(false);
+          }}
+        />
+      )}
+
+      {showModal2 && (
+        <EmailModal
+          title="CAD-Daten anfragen"
+          subtitle="Technische Zeichnungen anfordern"
+          emailTo="cad@syskomp.de"
+          subjectTitle="CAD"
+          subjectText="Kettenförderer Artnr: 67890"
+          bodyWithoutContact={`Sehr geehrte Damen und Herren,
+
+bitte senden Sie mir die CAD-Daten für:
+- Kettenförderer (Artikel-Nr: 67890)
+- Format: STEP / DXF
+
+Vielen Dank im Voraus.
+
+Mit freundlichen Grüßen`}
+          description="CAD-Daten werden in der Regel innerhalb von 24 Stunden bereitgestellt."
+          note="Hinweis: CAD-Daten sind nur für registrierte Kunden verfügbar."
+          onClose={() => setShowModal2(false)}
+          onEmailSent={() => {
+            console.log('CAD email sent!');
+            setShowModal2(false);
           }}
         />
       )}
