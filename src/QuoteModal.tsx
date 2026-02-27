@@ -49,6 +49,8 @@ export interface QuoteContactData {
 
 export interface QuoteModalProps {
   title?: string;
+  /** Optional description text shown above the contact form (e.g. configuration summary) */
+  description?: string;
   items: QuoteDisplayItem[];
   showPrices?: boolean;
   onSubmit: (contact: QuoteContactData) => Promise<{ success: boolean; message?: string }>;
@@ -246,6 +248,7 @@ const saveContactData = (data: QuoteContactData) => {
 
 const QuoteModal: React.FC<QuoteModalProps> = ({
   title = 'Angebot anfordern',
+  description,
   items,
   showPrices = true,
   onSubmit,
@@ -352,6 +355,20 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
         {/* Success / Error message */}
         {result && (
           <div style={styles.message(result.type)}>{result.message}</div>
+        )}
+
+        {/* Description (optional, e.g. configuration summary) */}
+        {description && result?.type !== 'success' && (
+          <div style={{
+            ...styles.sectionBox,
+            whiteSpace: 'pre-line' as const,
+            fontSize: '12px',
+            lineHeight: '1.5',
+            maxHeight: '200px',
+            overflowY: 'auto' as const,
+          }}>
+            {description}
+          </div>
         )}
 
         {/* Contact form - only show if not succeeded */}
