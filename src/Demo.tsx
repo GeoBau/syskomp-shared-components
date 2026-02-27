@@ -1,13 +1,31 @@
 import React, { useState } from 'react';
 import EmailModal from './EmailModal';
+import QuoteModal from './QuoteModal';
+import type { QuoteDisplayItem, QuoteContactData } from './QuoteModal';
 
 /**
  * Demo page to showcase EmailModal usage
  * Compare this implementation with calls in other programs
  */
+const COLORS_DEMO = { skButton: '#00b51a' };
+
+const demoItems: QuoteDisplayItem[] = [
+  { description: 'Rollenförderer SKR-50', quantity: 2, unitPrice: 450.0 },
+  { description: 'Kurvenroller SKRK-30', quantity: 1, unitPrice: 320.0 },
+  { description: 'Anschlagpuffer', quantity: 4, unitPrice: 12.5 },
+];
+
+const demoSubmit = async (contact: QuoteContactData) => {
+  console.log('QuoteModal submit:', contact);
+  // Simulate API call
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  return { success: true, message: 'Ihr Angebot wurde erfolgreich angefordert. Wir melden uns in Kürze.' };
+};
+
 const Demo: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
@@ -53,6 +71,33 @@ const Demo: React.FC = () => {
           Open Email Modal (aus anderer App)
         </button>
       </div>
+
+      {/* QuoteModal Demo */}
+      <div style={{ marginBottom: '30px', padding: '15px', border: '1px solid #ccc', borderRadius: '4px' }}>
+        <h3>QuoteModal Demo: Angebot anfordern</h3>
+        <button
+          onClick={() => setShowQuoteModal(true)}
+          style={{
+            backgroundColor: COLORS_DEMO.skButton,
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px',
+          }}
+        >
+          Angebot anfordern
+        </button>
+      </div>
+
+      {showQuoteModal && (
+        <QuoteModal
+          items={demoItems}
+          onSubmit={demoSubmit}
+          onClose={() => setShowQuoteModal(false)}
+        />
+      )}
 
       {showModal && (
         <EmailModal
