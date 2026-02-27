@@ -96,7 +96,7 @@ const styles = {
   sectionBox: {
     backgroundColor: '#f9fafb',
     border: '1px solid #e5e7eb',
-    padding: '10px 12px',
+    padding: '6px 12px',
     borderRadius: '4px',
     marginBottom: '10px',
   },
@@ -504,7 +504,10 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
 
             {/* ── Hinweis für Syskomp ── */}
             <div style={styles.sectionBox}>
-              <p style={styles.sectionTitle}>Hinweis für Syskomp</p>
+              <p style={{ ...styles.sectionTitle, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span>Hinweis für Syskomp</span>
+                <span style={{ fontSize: '11px', fontWeight: 'normal', color: '#9ca3af' }}>{form.note.length}/500</span>
+              </p>
               <textarea
                 value={form.note}
                 onChange={(e) => updateField('note', e.target.value.slice(0, 500))}
@@ -517,9 +520,6 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
                   minHeight: '60px',
                 }}
               />
-              <div style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'right' as const, marginTop: '2px' }}>
-                {form.note.length}/500
-              </div>
             </div>
 
             {/* ── Artikelliste ── */}
