@@ -95,8 +95,6 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '2px',
-    fontSize: '13px',
-    color: '#374151',
   },
   modal: {
     backgroundColor: 'white',
@@ -107,6 +105,10 @@ const styles = {
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     maxHeight: '90vh',
     overflowY: 'auto' as const,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontSize: '13px',
+    lineHeight: '1.4',
+    color: '#374151',
   },
   title: {
     fontSize: '18px',
@@ -170,6 +172,8 @@ const styles = {
     padding: '2px 3px',
     border: '1px solid #d1d5db',
     borderRadius: '4px',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
   },
   textarea: {
     width: '100%',
@@ -195,6 +199,8 @@ const styles = {
     cursor: 'pointer',
     fontWeight: '500' as const,
     transition: 'opacity 0.2s',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
   },
   buttonClose: {
     flex: '0 0 auto',
