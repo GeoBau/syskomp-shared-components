@@ -44,6 +44,7 @@ export interface QuoteContactData {
   department: string;
   phone: string;
   email: string;
+  note: string;
 }
 
 export interface QuoteModalProps {
@@ -265,6 +266,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
       department: '',
       phone: '',
       email: '',
+      note: '',
     };
     return { ...defaults, ...loadContactData() };
   });
@@ -497,6 +499,26 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
                     style={inputStyle('city')}
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* ── Hinweis für Syskomp ── */}
+            <div style={styles.sectionBox}>
+              <p style={styles.sectionTitle}>Hinweis für Syskomp</p>
+              <textarea
+                value={form.note}
+                onChange={(e) => updateField('note', e.target.value.slice(0, 500))}
+                maxLength={500}
+                rows={3}
+                placeholder="Optionaler Hinweis oder Anmerkung..."
+                style={{
+                  ...styles.input,
+                  resize: 'vertical' as const,
+                  minHeight: '60px',
+                }}
+              />
+              <div style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'right' as const, marginTop: '2px' }}>
+                {form.note.length}/500
               </div>
             </div>
 
