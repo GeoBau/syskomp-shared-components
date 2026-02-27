@@ -358,20 +358,6 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
           <div style={styles.message(result.type)}>{result.message}</div>
         )}
 
-        {/* Description (optional, e.g. configuration summary) */}
-        {description && result?.type !== 'success' && (
-          <div style={{
-            ...styles.sectionBox,
-            whiteSpace: 'pre-line' as const,
-            fontSize: '12px',
-            lineHeight: '1.5',
-            maxHeight: '200px',
-            overflowY: 'auto' as const,
-          }}>
-            {description}
-          </div>
-        )}
-
         {/* Contact form - only show if not succeeded */}
         {result?.type !== 'success' && (
           <>
@@ -539,6 +525,20 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
                 }}
               />
             </div>
+
+            {/* ── Produktbeschreibung (optional) ── */}
+            {description && (
+              <div style={{
+                ...styles.sectionBox,
+                whiteSpace: 'pre-line' as const,
+                fontSize: '12px',
+                lineHeight: '1.5',
+                maxHeight: '200px',
+                overflowY: 'auto' as const,
+              }}>
+                {description}
+              </div>
+            )}
 
             {/* ── Artikelliste ── */}
             <div style={styles.sectionBox}>
