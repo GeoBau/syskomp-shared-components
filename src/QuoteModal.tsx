@@ -157,7 +157,7 @@ const styles = {
   itemsTable: {
     width: '100%',
     borderCollapse: 'collapse' as const,
-    fontSize: '13px',
+    fontSize: '12px',
   },
   itemRow: {
     borderBottom: '1px solid #e5e7eb',
