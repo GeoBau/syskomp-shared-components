@@ -165,6 +165,7 @@ const styles = {
   itemCell: {
     padding: '4px 6px',
     verticalAlign: 'top' as const,
+    whiteSpace: 'pre-line' as const,
   },
   itemCellRight: {
     padding: '4px 6px',
