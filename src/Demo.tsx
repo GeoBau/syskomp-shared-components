@@ -94,6 +94,7 @@ const Demo: React.FC = () => {
       {showQuoteModal && (
         <QuoteModal
           items={demoItems}
+          description={"Rollenförderer SKR-50\nLänge: 2000mm, Breite: 600mm\nTragkraft: 50kg/m\nAntrieb: 0,37kW Getriebemotor"}
           onSubmit={demoSubmit}
           onClose={() => setShowQuoteModal(false)}
         />
