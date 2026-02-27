@@ -18,6 +18,10 @@
     "./EmailModal": {
       "import": "./src/EmailModal.tsx",
       "types": "./src/EmailModal.tsx"
+    },
+    "./QuoteModal": {
+      "import": "./src/QuoteModal.tsx",
+      "types": "./src/QuoteModal.tsx"
     }
   },
   "scripts": {

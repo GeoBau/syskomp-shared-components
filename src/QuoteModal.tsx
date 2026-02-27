@@ -6,7 +6,7 @@
  * Font/style independent from host application (same approach as EmailModal)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Color constants - Syskomp design system
 const COLORS = {
@@ -223,6 +223,24 @@ const formatPrice = (price: number): string =>
 const isValidEmail = (email: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+// ─── LocalStorage Persistence ────────────────────────────────
+
+const STORAGE_KEY = 'syskomp-quote-contact';
+
+const loadContactData = (): Partial<QuoteContactData> => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch { /* ignore */ }
+  return {};
+};
+
+const saveContactData = (data: QuoteContactData) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch { /* ignore */ }
+};
+
 // ─── Component ───────────────────────────────────────────────
 
 const QuoteModal: React.FC<QuoteModalProps> = ({
@@ -232,21 +250,29 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
   onSubmit,
   onClose,
 }) => {
-  // Form state
-  const [form, setForm] = useState<QuoteContactData>({
-    salutation: 'Herr',
-    firstName: '',
-    lastName: '',
-    company: '',
-    street: '',
-    houseNumber: '',
-    zip: '',
-    city: '',
-    country: 'DE',
-    department: '',
-    phone: '',
-    email: '',
+  // Form state — initialize from localStorage if available
+  const [form, setForm] = useState<QuoteContactData>(() => {
+    const defaults: QuoteContactData = {
+      salutation: 'Herr',
+      firstName: '',
+      lastName: '',
+      company: '',
+      street: '',
+      houseNumber: '',
+      zip: '',
+      city: '',
+      country: 'DE',
+      department: '',
+      phone: '',
+      email: '',
+    };
+    return { ...defaults, ...loadContactData() };
   });
+
+  // Persist contact data on change
+  useEffect(() => {
+    saveContactData(form);
+  }, [form]);
 
   const [errors, setErrors] = useState<Partial<Record<keyof QuoteContactData, boolean>>>({});
   const [submitting, setSubmitting] = useState(false);

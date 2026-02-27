@@ -52,6 +52,10 @@ const fillForm = async (user: ReturnType<typeof userEvent.setup>, container: HTM
 const getSubmitButton = () =>
   screen.getByText(/Ihr Angebot/);
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe('QuoteModal', () => {
   it('renders with default title', () => {
     render(<QuoteModal {...defaultProps} />);
