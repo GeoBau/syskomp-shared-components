@@ -284,8 +284,25 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  const sanitizeField = (field: keyof QuoteContactData, value: string): string => {
+    const patterns: Partial<Record<keyof QuoteContactData, RegExp>> = {
+      firstName:   /[^a-zA-ZäöüÄÖÜß\s\-]/g,
+      lastName:    /[^a-zA-ZäöüÄÖÜß\s\-]/g,
+      company:     /[^a-zA-ZäöüÄÖÜß0-9\s&.,\-()]/g,
+      street:      /[^a-zA-ZäöüÄÖÜß0-9\s.\-]/g,
+      houseNumber: /[^a-zA-Z0-9/]/g,
+      zip:         /[^a-zA-Z0-9\-]/g,
+      city:        /[^a-zA-ZäöüÄÖÜß\s\-.]/g,
+      department:  /[^a-zA-ZäöüÄÖÜß0-9\s\-/.]/g,
+      phone:       /[^0-9+\-()/\s]/g,
+      note:        /[^a-zA-ZäöüÄÖÜß0-9\s.,\-!?()/]/g,
+    };
+    const pattern = patterns[field];
+    return pattern ? value.replace(pattern, '') : value;
+  };
+
   const updateField = (field: keyof QuoteContactData, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: sanitizeField(field, value) }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: false }));
     }
