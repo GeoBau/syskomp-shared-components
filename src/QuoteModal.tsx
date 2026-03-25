@@ -283,6 +283,30 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
   const [errors, setErrors] = useState<Partial<Record<keyof QuoteContactData, boolean>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showPhoneDialog, setShowPhoneDialog] = useState(false);
+  const [phoneTemp, setPhoneTemp] = useState('');
+
+  // Auto-fill city from ZIP via Zippopotam.us
+  useEffect(() => {
+    const zip = form.zip.trim();
+    const country = form.country.trim().toLowerCase();
+    if (zip.length < 4 || !country) return;
+
+    const controller = new AbortController();
+    const fetchCity = async () => {
+      try {
+        const res = await fetch(`https://api.zippopotam.us/${country}/${zip}`, { signal: controller.signal });
+        if (!res.ok) return;
+        const data = await res.json();
+        const place = data?.places?.[0]?.['place name'];
+        if (place && !form.city.trim()) {
+          setForm((prev) => ({ ...prev, city: place }));
+        }
+      } catch { /* ignore abort / network errors */ }
+    };
+    const timer = setTimeout(fetchCity, 400);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [form.zip, form.country]);
 
   const sanitizeField = (field: keyof QuoteContactData, value: string): string => {
     const patterns: Partial<Record<keyof QuoteContactData, RegExp>> = {
@@ -336,7 +360,10 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
     setResult(null);
 
     try {
-      const res = await onSubmit(form);
+      const submitData = form.phone.trim()
+        ? { ...form, note: (form.note ? form.note + '\n' : '') + '[hat um Rückruf gebeten]' }
+        : form;
+      const res = await onSubmit(submitData);
       if (res.success) {
         setResult({ type: 'success', message: res.message || 'Angebot wurde erfolgreich angefordert.' });
       } else {
@@ -415,7 +442,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
                 </div>
               </div>
 
-              {/* Row 2: Abteilung / Telefon / E-Mail */}
+              {/* Row 2: Abteilung / E-Mail */}
               <div style={styles.row}>
                 <div style={styles.field(0.8)}>
                   <label style={styles.label}>Abteilung</label>
@@ -424,15 +451,6 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
                     value={form.department}
                     onChange={(e) => updateField('department', e.target.value)}
                     style={inputStyle('department')}
-                  />
-                </div>
-                <div style={styles.field(0.8)}>
-                  <label style={styles.label}>Telefon</label>
-                  <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={(e) => updateField('phone', e.target.value)}
-                    style={inputStyle('phone')}
                   />
                 </div>
                 <div style={styles.field(1.4)}>
@@ -524,11 +542,123 @@ const QuoteModal: React.FC<QuoteModalProps> = ({
             </div>
 
             {/* ── Hinweis für Syskomp ── */}
-            <div style={styles.sectionBox}>
+            <div style={{ ...styles.sectionBox, position: 'relative' as const }}>
               <p style={{ ...styles.sectionTitle, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span>Hinweis für Syskomp</span>
                 <span style={{ fontSize: '11px', fontWeight: 'normal', color: '#9ca3af' }}>{form.note.length}/500</span>
               </p>
+              {/* ── Rückruf-Button ── */}
+              <div style={{ marginBottom: '8px' }}>
+                {form.phone ? (
+                  <button
+                    type="button"
+                    onClick={() => { setPhoneTemp(form.phone); setShowPhoneDialog(true); }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 12px',
+                      border: `1px solid ${COLORS.skTurkis}`,
+                      borderRadius: '4px',
+                      backgroundColor: COLORS.skTurkisLight,
+                      color: COLORS.skBlau,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <span>Rückruf: {form.phone}</span>
+                    <span
+                      onClick={(e) => { e.stopPropagation(); updateField('phone', ''); }}
+                      style={{ fontWeight: 'bold', color: '#6b7280', cursor: 'pointer' }}
+                    >&times;</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { setPhoneTemp(''); setShowPhoneDialog(true); }}
+                    style={{
+                      padding: '6px 12px',
+                      border: `1px solid ${COLORS.skTurkis}`,
+                      borderRadius: '4px',
+                      backgroundColor: 'white',
+                      color: COLORS.skTurkis,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      fontSize: '12px',
+                    }}
+                  >
+                    Ich bitte um telefonischen Rückruf
+                  </button>
+                )}
+
+                {showPhoneDialog && (
+                  <div style={{
+                    position: 'absolute' as const,
+                    bottom: '100%',
+                    left: '12px',
+                    marginBottom: '4px',
+                    backgroundColor: 'white',
+                    border: `1px solid ${COLORS.skTurkisBorder}`,
+                    borderRadius: '6px',
+                    padding: '14px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                    zIndex: 60,
+                    width: '280px',
+                  }}>
+                    <p style={{ margin: '0 0 6px 0', fontWeight: '600', fontSize: '13px', color: COLORS.skBlau }}>
+                      Telefonischen Rückruf anfordern
+                    </p>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#6b7280' }}>
+                      Wir rufen nur zu Ihren Geschäftszeiten an.
+                    </p>
+                    <input
+                      type="tel"
+                      value={phoneTemp}
+                      onChange={(e) => setPhoneTemp(sanitizeField('phone', e.target.value))}
+                      placeholder="Ihre Telefonnummer"
+                      autoFocus
+                      style={{ ...styles.input, marginBottom: '10px' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => { updateField('phone', phoneTemp); setShowPhoneDialog(false); }}
+                        style={{
+                          flex: 1,
+                          padding: '6px 10px',
+                          backgroundColor: COLORS.skButton,
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          fontSize: '12px',
+                        }}
+                      >
+                        Übernehmen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPhoneDialog(false)}
+                        style={{
+                          flex: 1,
+                          padding: '6px 10px',
+                          backgroundColor: '#6b7280',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          fontSize: '12px',
+                        }}
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               <textarea
                 value={form.note}
                 onChange={(e) => updateField('note', e.target.value.slice(0, 500))}

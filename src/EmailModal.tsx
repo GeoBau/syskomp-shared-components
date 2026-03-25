@@ -262,6 +262,8 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
   const [contactPhone, setContactPhone] = useState(savedContact.phone || '');
   const [contactCompany, setContactCompany] = useState(savedContact.company || '');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showPhoneDialog, setShowPhoneDialog] = useState(false);
+  const [phoneTemp, setPhoneTemp] = useState('');
 
   // Persist contact data on change
   useEffect(() => {
@@ -285,7 +287,8 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
   }, [subjectTitle, subjectText, title, subject, inquiryNumber]);
 
   // Add contact info to email body
-  const body = `${bodyWithoutContact}\n\nName: ${contactName}\nTelefon: ${contactPhone}\nFirma: ${contactCompany}`;
+  const callbackNote = contactPhone.trim() ? ' [hat um Rückruf gebeten]' : '';
+  const body = `${bodyWithoutContact}\n\nName: ${contactName}\nTelefon: ${contactPhone}${callbackNote}\nFirma: ${contactCompany}`;
 
   const handleCopyText = async () => {
     const fullEmailText = `An: ${emailTo}\nBetreff: ${emailSubject}\n\n${body}`;
@@ -395,15 +398,120 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
                 style={styles.input}
               />
             </div>
-            <div style={styles.inputRow}>
-              <label style={styles.label}>Telefonnummer:</label>
-              <input
-                type="tel"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                placeholder="(optional)"
-                style={styles.input}
-              />
+            <div style={{ ...styles.inputRow, position: 'relative' as const }}>
+              <label style={styles.label}>Telefon:</label>
+              {contactPhone ? (
+                <button
+                  type="button"
+                  onClick={() => { setPhoneTemp(contactPhone); setShowPhoneDialog(true); }}
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '4px 8px',
+                    border: `1px solid ${COLORS.skTurkis}`,
+                    borderRadius: '4px',
+                    backgroundColor: COLORS.skTurkisLight,
+                    color: COLORS.skBlau,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: 'inherit',
+                  }}
+                >
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{contactPhone}</span>
+                  <span
+                    onClick={(e) => { e.stopPropagation(); setContactPhone(''); }}
+                    style={{ marginLeft: '6px', fontWeight: 'bold', color: '#6b7280', cursor: 'pointer' }}
+                  >&times;</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setPhoneTemp(''); setShowPhoneDialog(true); }}
+                  style={{
+                    flex: 1,
+                    padding: '4px 8px',
+                    border: `1px solid ${COLORS.skTurkis}`,
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: COLORS.skTurkis,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: 'inherit',
+                    textAlign: 'left' as const,
+                  }}
+                >
+                  Bitte um Rückruf
+                </button>
+              )}
+
+              {showPhoneDialog && (
+                <div style={{
+                  position: 'absolute' as const,
+                  top: '100%',
+                  left: '110px',
+                  marginTop: '4px',
+                  backgroundColor: 'white',
+                  border: `1px solid ${COLORS.skTurkisBorder}`,
+                  borderRadius: '6px',
+                  padding: '14px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                  zIndex: 60,
+                  width: '280px',
+                }}>
+                  <p style={{ margin: '0 0 6px 0', fontWeight: '600', fontSize: '13px', color: COLORS.skBlau }}>
+                    Telefonischen Rückruf anfordern
+                  </p>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#6b7280' }}>
+                    Wir rufen nur zu Ihren Geschäftszeiten an.
+                  </p>
+                  <input
+                    type="tel"
+                    value={phoneTemp}
+                    onChange={(e) => setPhoneTemp(e.target.value.replace(/[^0-9+\-()/\s]/g, ''))}
+                    placeholder="Ihre Telefonnummer"
+                    autoFocus
+                    style={{ ...styles.input, marginBottom: '10px' }}
+                  />
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setContactPhone(phoneTemp); setShowPhoneDialog(false); }}
+                      style={{
+                        flex: 1,
+                        padding: '6px 10px',
+                        backgroundColor: COLORS.skButton,
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Übernehmen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPhoneDialog(false)}
+                      style={{
+                        flex: 1,
+                        padding: '6px 10px',
+                        backgroundColor: '#6b7280',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        fontSize: '12px',
+                      }}
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <div style={styles.inputRow}>
               <label style={styles.label}>Firma:</label>

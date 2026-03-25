@@ -22,7 +22,8 @@ const fillForm = async (user: ReturnType<typeof userEvent.setup>, container: HTM
   // Query all inputs by type for reliable selection
   const allInputs = container.querySelectorAll('input');
   // Order in DOM: firstName(text), lastName(text), department(text), company(text), street(text),
-  // houseNumber(text), zip(text), city(text), phone(tel), email(email)
+  // houseNumber(text), zip(text), city(text), email(email)
+  // Note: phone is now behind a callback-request button/dialog
   const fieldValues: Record<string, string> = {
     'text-0': 'Max',         // firstName
     'text-1': 'Mustermann',  // lastName
@@ -40,13 +41,19 @@ const fillForm = async (user: ReturnType<typeof userEvent.setup>, container: HTM
       const val = fieldValues[`text-${textIdx}`];
       if (val) await user.type(input, val);
       textIdx++;
-    } else if (input.type === 'tel') {
-      await user.type(input, '0301234567');
     } else if (input.type === 'email') {
       await user.type(input, 'max@test.de');
     }
   }
 
+  // Fill phone via callback dialog
+  const callbackButton = screen.getByText('Ich bitte um telefonischen Rückruf');
+  await user.click(callbackButton);
+  const phoneInput = container.querySelector('input[type="tel"]') as HTMLInputElement;
+  if (phoneInput) {
+    await user.type(phoneInput, '0301234567');
+    await user.click(screen.getByText('Übernehmen'));
+  }
 };
 
 const getSubmitButton = () =>
@@ -101,9 +108,9 @@ describe('QuoteModal', () => {
     expect(screen.getByText(/E-Mail/)).toBeInTheDocument();
   });
 
-  it('renders optional fields (Abteilung, Telefon)', () => {
+  it('renders optional fields (Abteilung, Telefon/Rückruf)', () => {
     render(<QuoteModal {...defaultProps} />);
-    expect(screen.getByText(/Telefon/)).toBeInTheDocument();
+    expect(screen.getByText('Ich bitte um telefonischen Rückruf')).toBeInTheDocument();
     expect(screen.getByText(/Abteilung/)).toBeInTheDocument();
   });
 
@@ -163,8 +170,6 @@ describe('QuoteModal', () => {
         if (input.type === 'text') {
           if (textIdx < textValues.length) await user.type(input, textValues[textIdx]);
           textIdx++;
-        } else if (input.type === 'tel') {
-          await user.type(input, '0301234567');
         } else if (input.type === 'email') {
           await user.type(input, 'not-valid');
         }
@@ -218,6 +223,7 @@ describe('QuoteModal', () => {
       expect(contact.country).toBe('DE');
       expect(contact.department).toBe('Einkauf');
       expect(contact.phone).toBe('0301234567');
+      expect(contact.note).toContain('[hat um Rückruf gebeten]');
       expect(contact.email).toBe('max@test.de');
     });
 
