@@ -301,8 +301,11 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
       textArea.value = fullEmailText;
       textArea.setAttribute('readonly', '');
       textArea.style.position = 'fixed';
+      textArea.style.top = '0';
+      textArea.style.left = '0';
       textArea.style.opacity = '0';
       document.body.appendChild(textArea);
+      textArea.focus();
       textArea.select();
       // iOS Safari ignores select() on textareas without an explicit range
       textArea.setSelectionRange(0, fullEmailText.length);
@@ -316,16 +319,25 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
       return ok;
     };
 
+    // In a cross-origin iframe (landing page embed) the async Clipboard API
+    // is usually blocked, and awaiting its rejected promise consumes the
+    // user activation that execCommand('copy') needs afterwards — so run the
+    // synchronous legacy path FIRST when embedded.
+    const embedded = window.self !== window.top;
+
     let success = false;
-    if (navigator.clipboard) {
+    if (embedded) {
+      success = legacyCopy();
+    }
+    if (!success && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(fullEmailText);
         success = true;
       } catch {
-        // blocked (permissions policy / iframe) → try legacy path below
+        // blocked (permissions policy / iframe) → legacy path below
       }
     }
-    if (!success) {
+    if (!success && !embedded) {
       success = legacyCopy();
     }
 
