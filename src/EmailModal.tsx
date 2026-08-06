@@ -297,34 +297,37 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
     // textarea/execCommand fallback — needed when the Clipboard API is
     // unavailable OR rejects (e.g. cross-origin iframe without
     // allow="clipboard-write", as on the syskomp landing page embed).
+    // contentEditable + Range selection is the copy path iOS accepts.
+    // A textarea's DOM range collapses the value to a single line, so use
+    // a div with white-space:pre-wrap — that keeps the line breaks.
     const legacyCopy = (): boolean => {
-      const textArea = document.createElement('textarea');
-      textArea.value = fullEmailText;
-      // iOS refuses execCommand('copy') on readonly fields; the
-      // contentEditable + Range dance is the canonical iOS recipe.
-      textArea.contentEditable = 'true';
-      textArea.readOnly = false;
-      textArea.style.position = 'fixed';
-      textArea.style.top = '0';
-      textArea.style.left = '0';
-      textArea.style.opacity = '0';
-      document.body.appendChild(textArea);
-      textArea.focus();
+      const el = document.createElement('div');
+      el.contentEditable = 'true';
+      el.textContent = fullEmailText;
+      el.style.position = 'fixed';
+      el.style.top = '0';
+      el.style.left = '0';
+      el.style.opacity = '0';
+      el.style.whiteSpace = 'pre-wrap';
+      document.body.appendChild(el);
+      el.focus();
       const range = document.createRange();
-      range.selectNodeContents(textArea);
+      range.selectNodeContents(el);
       const selection = window.getSelection();
       if (selection) {
         selection.removeAllRanges();
         selection.addRange(range);
       }
-      textArea.setSelectionRange(0, fullEmailText.length);
       let ok = false;
       try {
         ok = document.execCommand('copy');
       } catch {
         ok = false;
       }
-      document.body.removeChild(textArea);
+      document.body.removeChild(el);
+      if (selection) {
+        selection.removeAllRanges();
+      }
       return ok;
     };
 
