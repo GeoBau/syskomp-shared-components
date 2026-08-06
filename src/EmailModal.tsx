@@ -293,50 +293,66 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
   const handleCopyText = async () => {
     const fullEmailText = `An: ${emailTo}\nBetreff: ${emailSubject}\n\n${body}`;
 
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(fullEmailText);
-        setCopySuccess(true);
-      } else {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = fullEmailText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        const success = document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setCopySuccess(success);
+    // textarea/execCommand fallback — needed when the Clipboard API is
+    // unavailable OR rejects (e.g. cross-origin iframe without
+    // allow="clipboard-write", as on the syskomp landing page embed).
+    const legacyCopy = (): boolean => {
+      const textArea = document.createElement('textarea');
+      textArea.value = fullEmailText;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      // iOS Safari ignores select() on textareas without an explicit range
+      textArea.setSelectionRange(0, fullEmailText.length);
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch {
+        ok = false;
       }
+      document.body.removeChild(textArea);
+      return ok;
+    };
 
-      if (copySuccess) {
-        setTimeout(() => setCopySuccess(false), 2000);
+    let success = false;
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(fullEmailText);
+        success = true;
+      } catch {
+        // blocked (permissions policy / iframe) → try legacy path below
       }
-    } catch (error) {
-      console.error('Copy to clipboard failed:', error);
+    }
+    if (!success) {
+      success = legacyCopy();
+    }
+
+    setCopySuccess(success);
+    if (success) {
+      setTimeout(() => setCopySuccess(false), 2000);
+    } else {
+      console.error('Copy to clipboard failed');
     }
   };
 
   const handleOpenEmail = () => {
     const mailtoLink = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
 
-    // Browser-specific mailto handling
-    const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
-
-    if (isChrome) {
-      const link = document.createElement('a');
-      link.href = mailtoLink;
-      link.target = '_blank';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.dispatchEvent(new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      }));
-      document.body.removeChild(link);
-    } else {
-      window.location.href = mailtoLink;
-    }
+    // Anchor + native .click() instead of window.location.href:
+    // iOS/WebKit silently blocks mailto: location changes inside a
+    // (cross-origin) iframe, as on the syskomp landing page embed.
+    // target="_top" navigates the top-level browsing context — allowed with
+    // user activation, and mailto never actually leaves the page. Outside an
+    // iframe _top is the window itself, so behavior is unchanged there.
+    const link = document.createElement('a');
+    link.href = mailtoLink;
+    link.target = '_top';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
     onEmailSent?.();
   };
