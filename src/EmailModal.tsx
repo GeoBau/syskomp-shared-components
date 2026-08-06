@@ -262,6 +262,7 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
   const [contactPhone, setContactPhone] = useState(savedContact.phone || '');
   const [contactCompany, setContactCompany] = useState(savedContact.company || '');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [showPhoneDialog, setShowPhoneDialog] = useState(false);
   const [phoneTemp, setPhoneTemp] = useState('');
 
@@ -299,15 +300,23 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
     const legacyCopy = (): boolean => {
       const textArea = document.createElement('textarea');
       textArea.value = fullEmailText;
-      textArea.setAttribute('readonly', '');
+      // iOS refuses execCommand('copy') on readonly fields; the
+      // contentEditable + Range dance is the canonical iOS recipe.
+      textArea.contentEditable = 'true';
+      textArea.readOnly = false;
       textArea.style.position = 'fixed';
       textArea.style.top = '0';
       textArea.style.left = '0';
       textArea.style.opacity = '0';
       document.body.appendChild(textArea);
       textArea.focus();
-      textArea.select();
-      // iOS Safari ignores select() on textareas without an explicit range
+      const range = document.createRange();
+      range.selectNodeContents(textArea);
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
       textArea.setSelectionRange(0, fullEmailText.length);
       let ok = false;
       try {
@@ -342,10 +351,12 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
     }
 
     setCopySuccess(success);
+    setCopyFailed(!success);
     if (success) {
       setTimeout(() => setCopySuccess(false), 2000);
     } else {
       console.error('Copy to clipboard failed');
+      setTimeout(() => setCopyFailed(false), 3000);
     }
   };
 
@@ -565,11 +576,11 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
         <div style={styles.buttonContainer}>
           <button
             onClick={handleCopyText}
-            style={{ ...styles.button, backgroundColor: copySuccess ? '#10b981' : COLORS.skTurkis }}
+            style={{ ...styles.button, backgroundColor: copySuccess ? '#10b981' : copyFailed ? '#dc2626' : COLORS.skTurkis }}
             onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
             onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
-            {copySuccess ? '✓ Text kopiert!' : 'Text kopieren'}
+            {copySuccess ? '✓ Text kopiert!' : copyFailed ? '✗ Kopieren blockiert' : 'Text kopieren'}
           </button>
           <button
             onClick={handleOpenEmail}
