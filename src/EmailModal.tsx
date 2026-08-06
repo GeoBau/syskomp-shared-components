@@ -303,7 +303,9 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
     const legacyCopy = (): boolean => {
       const el = document.createElement('div');
       el.contentEditable = 'true';
-      el.textContent = fullEmailText;
+      // innerText turns \n into <br>, so even the natural HTML clipboard
+      // flavor keeps the line structure
+      el.innerText = fullEmailText;
       el.style.position = 'fixed';
       el.style.top = '0';
       el.style.left = '0';
@@ -318,12 +320,30 @@ const EmailModal: React.FC<EmailModalProps> = (props) => {
         selection.removeAllRanges();
         selection.addRange(range);
       }
+      // Override what execCommand puts on the clipboard: exact plain text
+      // plus an HTML flavor with real <br> — apps that paste HTML (e.g.
+      // Outlook iOS) would otherwise collapse the newlines.
+      const html = fullEmailText
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
+      const setExactData = (e: Event) => {
+        const clip = (e as ClipboardEvent).clipboardData;
+        if (clip) {
+          clip.setData('text/plain', fullEmailText);
+          clip.setData('text/html', html);
+          e.preventDefault();
+        }
+      };
+      document.addEventListener('copy', setExactData, true);
       let ok = false;
       try {
         ok = document.execCommand('copy');
       } catch {
         ok = false;
       }
+      document.removeEventListener('copy', setExactData, true);
       document.body.removeChild(el);
       if (selection) {
         selection.removeAllRanges();

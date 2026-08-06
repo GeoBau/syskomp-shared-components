@@ -1,6 +1,6 @@
 {
   "name": "@syskomp/shared-components",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Shared React components for Syskomp configurators",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
